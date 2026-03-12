@@ -16,7 +16,6 @@ The platform helps users:
 
 All users access the system through **role-based dashboards** after authentication.
 
-
 # 2. User Authentication Workflow
 
 ## 2.1 Registration
@@ -57,19 +56,14 @@ Required information:
 User → Login Page → Enter Credentials → Backend Authentication (JWT) → Role Verification → Redirect to Dashboard
 ```
 
-
 Possible outcomes:
 
 - Successful login → Dashboard
 - Invalid credentials → Error message
 
-
-
 # 3. Hospital Dashboard Workflow
 
 Hospitals manage **resources, patient requests, hospital transfers, and ambulances**.
-
-
 
 ## 3.1 Resource Management Workflow
 
@@ -102,7 +96,6 @@ Socket.io Broadcast
    ↓
 All dashboards updated in real-time
 ```
-
 
 ## 3.2 Hospital-to-Hospital Request Workflow
 
@@ -138,7 +131,6 @@ Hospital B Receives Notification
 - Accept transfer
 - Reject transfer
 - Suggest another hospital
-
 
 ## 3.3 Patient Request Workflow
 
@@ -191,7 +183,6 @@ Assign Ambulance to Emergency
 
 Ambulance drivers manage **availability and emergency pickup requests**.
 
-
 ## 4.1 Ambulance Availability Workflow
 
 ```
@@ -210,7 +201,6 @@ Drivers can change status to:
 - On Duty
 - Offline
 
-
 ## 4.2 GPS Tracking Workflow
 
 Ambulance location is updated in real-time.
@@ -228,7 +218,6 @@ Displayed on Map
 ```
 
 This allows hospitals and patients to track ambulances live.
-
 
 ## 4.3 Emergency Pickup Workflow
 
@@ -261,11 +250,9 @@ Navigation to Pickup Location
 Live Tracking Enabled
 ```
 
-
 # 5. Patient Dashboard Workflow
 
 Patients can search hospitals, request admission, and request ambulances.
-
 
 ## 5.1 Search Hospitals Workflow
 
@@ -300,7 +287,6 @@ Displayed information:
 - Resource availability
 - Google Maps location
 
-
 ## 5.2 Admission Request Workflow
 
 ```
@@ -318,7 +304,6 @@ Hospital Accepts / Rejects
    ↓
 Patient Receives Response
 ```
-
 
 ## 5.3 Ambulance Request Workflow
 
@@ -348,7 +333,6 @@ Displayed ambulance information:
 - Estimated arrival time
 - Live location
 
-
 # 6. Real-Time Data Flow
 
 Real-time updates are powered by **Socket.io**.
@@ -375,43 +359,7 @@ Socket Event Triggered
 All Connected Dashboards Updated
 ```
 
-
-# 7. Database Entities (Simplified)
-
-## Hospitals
-
-- hospital_id
-- name
-- address
-- contact
-- resources
-
-## Ambulances
-
-- ambulance_id
-- driver_name
-- phone
-- hospital_id
-- status
-- gps_location
-
-## Patients
-
-- patient_id
-- name
-- phone
-
-## Requests
-
-- request_id
-- type
-- sender_id
-- receiver_id
-- status
-- details
-
-
-# 8. Notification Workflow
+# 7. Notification Workflow
 
 Notifications are generated for:
 
@@ -432,7 +380,7 @@ Push Notification Sent
 User Takes Action
 ```
 
-# 9. Error Handling Workflow
+# 8. Error Handling Workflow
 
 Possible system issues:
 
