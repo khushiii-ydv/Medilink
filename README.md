@@ -15,9 +15,10 @@ Project documentation is organized inside the `docs` directory.
 | [Workflow](docs/workflow.md) | Detailed workflow for patients, hospitals, and ambulance services |
 | [Role Permissions](docs/role_permissions.md) | Role-based access control definitions |
 | [ER Diagram](docs/er_diagram.md) | Entity relationship diagram of the database |
-| [Database Schema](docs/database_schema.md) | Database tables and relationships |
+| [Database Schema](docs/backend-implementation-roadmap.md) | Database tables and relationships |
 | [API Contract](docs/api_contract.md) | Complete REST API specification |
 | [System Architecture](docs/system_architecture.md) | Overall system architecture and components |
+| [Status Transition](docs/status-transition.md) | Request lifecycle and status flow |
 
 # Project Structure
 
