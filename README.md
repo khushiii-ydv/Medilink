@@ -1,16 +1,92 @@
-# React + Vite
+# MediLink – Smart Hospital Resource Network
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web-based platform for coordinating **hospital resources, ambulance services, and patient requests** in real time.
 
-Currently, two official plugins are available:
+The system allows **patients to find hospitals and request medical services**, while **hospitals manage resources and respond to requests efficiently**. Ambulance drivers can receive emergency requests and share live location updates.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+MediLink helps reduce delays in emergency care by providing **real-time visibility of hospital resources and ambulance availability**.
 
-## React Compiler
+# Documentation
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Project documentation is organized inside the `docs` directory.
 
-## Expanding the ESLint configuration
+| Document | Description |
+|---------|-------------|
+| [Workflow](docs/workflow.md) | Detailed workflow for patients, hospitals, and ambulance services |
+| [Role Permissions](docs/role_permissions.md) | Role-based access control definitions |
+| [ER Diagram](docs/er_diagram.md) | Entity relationship diagram of the database |
+| [Database Schema](docs/backend-implementation-roadmap.md) | Database tables and relationships |
+| [API Contract](docs/api_contract.md) | Complete REST API specification |
+| [System Architecture](docs/system_architecture.md) | Overall system architecture and components |
+| [Status Transition](docs/status-transition.md) | Request lifecycle and status flow |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# Project Structure
+
+```
+medilink
+│
+├── frontend/
+│   ├── assets/
+│   ├── components/
+│   ├── pages/
+│   │   ├── login/
+│   │   ├── patient-dashboard/
+│   │   ├── hospital-dashboard/
+│   │   └── ambulance-dashboard/
+│   └── index.html
+│
+├── backend/
+│   ├── controllers/
+│   ├── routes/
+│   ├── middleware/
+│   ├── services/
+│   ├── models/
+│   └── server.js
+│
+├── docs/
+│   ├── workflow.md
+│   ├── role-permissions.md
+│   ├── er-diagram.md
+│   ├── database-schema.md
+│   ├── api-contract.md
+│   └── system-architecture.md
+│
+└── README.md
+```
+
+# Run the Project
+
+The project includes helper scripts to start both the **frontend and backend**.
+
+### Windows
+
+Run the provided batch script:
+
+```bash
+run.bat
+```
+
+This script will:
+
+- Install dependencies (if needed)
+- Start the backend server
+- Start the frontend development server
+
+### Linux / macOS
+
+Make the script executable (first time only):
+
+```bash
+chmod +x run.sh
+```
+
+Run the script:
+
+```bash
+./run.sh
+```
+
+This will start both the **frontend and backend services**.
+
+
+
