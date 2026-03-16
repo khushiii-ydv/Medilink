@@ -51,37 +51,52 @@ export const createAdmissionRequest = async (req, res, next) => {
       });
     }
 
-    const admissionRequest = await prisma.admissionRequest.create({
-      data: {
-        patientId: patient.id,
-        hospitalId: hospital_id,
-        description: description || null,
-        status: "PENDING",
+const admissionRequest = await prisma.admissionRequest.create({
+  data: {
+    patientId: patient.id,
+    hospitalId: hospital_id,
+    description: description || null,
+    status: "PENDING",
+  },
+  include: {
+    patient: {
+      select: {
+        id: true,
+        name: true,
+        phoneNumber: true,
       },
-      include: {
-        patient: {
-          select: {
-            id: true,
-            name: true,
-            phoneNumber: true,
-          },
-        },
-        hospital: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-            contactNumber: true,
-          },
-        },
+    },
+    hospital: {
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        contactNumber: true,
       },
-    });
+    },
+  },
+});
 
-    return res.status(201).json({
-      status: "success",
-      message: "Admission request created successfully",
-      data: admissionRequest,
-    });
+const hospitalUser = await prisma.hospital.findUnique({
+  where: { id: hospital_id },
+  select: { userId: true, name: true },
+});
+
+if (hospitalUser) {
+  await prisma.notification.create({
+    data: {
+      userId: hospitalUser.userId,
+      type: "ADMISSION_REQUEST",
+      message: `New admission request received from patient ${admissionRequest.patient.name}`,
+    },
+  });
+}
+
+return res.status(201).json({
+  status: "success",
+  message: "Admission request created successfully",
+  data: admissionRequest,
+});
   } catch (error) {
     next(error);
   }
@@ -216,6 +231,20 @@ export const updateAdmissionRequestStatus = async (req, res, next) => {
         },
       },
     });
+    const patientUser = await prisma.patient.findUnique({
+  where: { id: updatedRequest.patient.id },
+  select: { userId: true },
+});
+
+if (patientUser) {
+  await prisma.notification.create({
+    data: {
+      userId: patientUser.userId,
+      type: "ADMISSION_REQUEST",
+      message: `Your admission request to ${updatedRequest.hospital.name} was ${updatedRequest.status.toLowerCase()}`,
+    },
+  });
+}
 
     return res.status(200).json({
       status: "success",
@@ -363,6 +392,23 @@ export const createAmbulanceRequest = async (req, res, next) => {
       },
     });
 
+    const ambulanceDriver = await prisma.ambulance.findUnique({
+  where: { id: availableAmbulance.id },
+  select: {
+    userId: true,
+    driverName: true,
+  },
+});
+
+if (ambulanceDriver) {
+  await prisma.notification.create({
+    data: {
+      userId: ambulanceDriver.userId,
+      type: "AMBULANCE_REQUEST",
+      message: `A new ambulance request has been assigned to you`,
+    },
+  });
+}
     return res.status(201).json({
       status: "success",
       message: "Ambulance request created successfully",
@@ -536,6 +582,22 @@ export const updateAmbulanceRequestStatus = async (req, res, next) => {
         data: { status: ambulanceStatus },
       }),
     ]);
+    if (updatedRequest.patient?.id) {
+  const patientUser = await prisma.patient.findUnique({
+    where: { id: updatedRequest.patient.id },
+    select: { userId: true },
+  });
+
+  if (patientUser) {
+    await prisma.notification.create({
+      data: {
+        userId: patientUser.userId,
+        type: "AMBULANCE_REQUEST",
+        message: `Your ambulance request was ${updatedRequest.status.toLowerCase()}`,
+      },
+    });
+  }
+}
 
     return res.status(200).json({
       status: "success",
@@ -633,7 +695,20 @@ export const createHospitalTransferRequest = async (req, res, next) => {
         },
       },
     });
+    const receiverHospitalUser = await prisma.hospital.findUnique({
+  where: { id: receiver_hospital_id },
+  select: { userId: true, name: true },
+});
 
+if (receiverHospitalUser) {
+  await prisma.notification.create({
+    data: {
+      userId: receiverHospitalUser.userId,
+      type: "TRANSFER_REQUEST",
+      message: `New ${transfer_type.toLowerCase()} request received from ${transferRequest.senderHospital.name}`,
+    },
+  });
+}
     return res.status(201).json({
       status: "success",
       message: "Hospital transfer request created successfully",
@@ -821,6 +896,20 @@ export const updateHospitalTransferRequestStatus = async (req, res, next) => {
         },
       },
     });
+    const senderHospitalUser = await prisma.hospital.findUnique({
+  where: { id: updatedRequest.senderHospital.id },
+  select: { userId: true },
+});
+
+if (senderHospitalUser) {
+  await prisma.notification.create({
+    data: {
+      userId: senderHospitalUser.userId,
+      type: "TRANSFER_REQUEST",
+      message: `Your transfer request to ${updatedRequest.receiverHospital.name} was ${updatedRequest.status.toLowerCase()}`,
+    },
+  });
+}
 
     return res.status(200).json({
       status: "success",
