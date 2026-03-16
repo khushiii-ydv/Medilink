@@ -9,7 +9,7 @@ MediLink is a **real-time healthcare coordination platform** connecting **hospit
 The platform helps users:
 
 - View real-time hospital resources
-- Request hospital admission
+- Request hospital admission33
 - Request ambulances
 - Coordinate patient transfers
 - Track emergency resources
