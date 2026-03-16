@@ -1,0 +1,232 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  PATIENT
+  HOSPITAL_ADMIN
+  AMBULANCE_DRIVER
+}
+
+enum AmbulanceStatus {
+  AVAILABLE
+  ON_DUTY
+  OFFLINE
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
+  EXPIRED
+}
+
+enum TransferType {
+  PATIENT_TRANSFER
+  BLOOD_REQUEST
+  EQUIPMENT_REQUEST
+  RESOURCE_SUPPORT
+}
+
+enum NotificationType {
+  ADMISSION_REQUEST
+  TRANSFER_REQUEST
+  AMBULANCE_REQUEST
+  RESOURCE_ALERT
+  GENERAL
+}
+
+model User {
+  id           String   @id @default(uuid())
+  phoneNumber  String   @unique
+  passwordHash String
+  role         UserRole
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  patient       Patient?
+  hospital      Hospital?
+  ambulance     Ambulance?
+  notifications Notification[]
+  auditLogs     AuditLog[]
+}
+
+model Patient {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  name        String
+  phoneNumber String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  admissionRequests AdmissionRequest[]
+  ambulanceRequests AmbulanceRequest[]
+}
+
+model Hospital {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  name          String
+  email         String?  @unique
+  address       String
+  contactNumber String
+  latitude      Float?
+  longitude     Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user              User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resources         HospitalResource?
+  bloodInventory    BloodInventory[]
+  specialists       Specialist[]
+  equipments        MedicalEquipment[]
+  ambulances        Ambulance[]
+  sentTransfers     HospitalTransferRequest[] @relation("SenderHospital")
+  receivedTransfers HospitalTransferRequest[] @relation("ReceiverHospital")
+  admissionRequests AdmissionRequest[]
+  ambulanceRequests AmbulanceRequest[]
+}
+
+model HospitalResource {
+  id                   String   @id @default(uuid())
+  hospitalId           String   @unique
+  totalBeds            Int      @default(0)
+  availableBeds        Int      @default(0)
+  totalIcuBeds         Int      @default(0)
+  availableIcuBeds     Int      @default(0)
+  totalVentilators     Int      @default(0)
+  availableVentilators Int      @default(0)
+  oxygenUnitsAvailable Int      @default(0)
+  updatedAt            DateTime @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+}
+
+model BloodInventory {
+  id             String   @id @default(uuid())
+  hospitalId     String
+  bloodGroup     String
+  unitsAvailable Int      @default(0)
+  updatedAt      DateTime @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@unique([hospitalId, bloodGroup])
+}
+
+model Specialist {
+  id         String  @id @default(uuid())
+  hospitalId String
+  name       String
+  specialty  String
+  available  Boolean @default(true)
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+}
+
+model MedicalEquipment {
+  id             String   @id @default(uuid())
+  hospitalId     String
+  name           String
+  totalUnits     Int      @default(0)
+  availableUnits Int      @default(0)
+  updatedAt      DateTime @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@unique([hospitalId, name])
+}
+
+model Ambulance {
+  id               String          @id @default(uuid())
+  userId           String          @unique
+  hospitalId       String
+  driverName       String
+  phoneNumber      String
+  ambulanceNumber  String          @unique
+  status           AmbulanceStatus @default(AVAILABLE)
+  currentLatitude  Float?
+  currentLongitude Float?
+  lastLocationAt   DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hospital          Hospital           @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  ambulanceRequests AmbulanceRequest[]
+}
+
+model AdmissionRequest {
+  id          String        @id @default(uuid())
+  patientId   String
+  hospitalId  String
+  description String?
+  status      RequestStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  patient  Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+}
+
+model HospitalTransferRequest {
+  id                 String        @id @default(uuid())
+  senderHospitalId   String
+  receiverHospitalId String
+  transferType       TransferType
+  description        String?
+  status             RequestStatus @default(PENDING)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  senderHospital   Hospital @relation("SenderHospital", fields: [senderHospitalId], references: [id], onDelete: Cascade)
+  receiverHospital Hospital @relation("ReceiverHospital", fields: [receiverHospitalId], references: [id], onDelete: Cascade)
+}
+
+model AmbulanceRequest {
+  id            String        @id @default(uuid())
+  patientId     String?
+  hospitalId    String?
+  ambulanceId   String?
+  pickupAddress String
+  latitude      Float?
+  longitude     Float?
+  description   String?
+  status        RequestStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  patient   Patient?   @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  hospital  Hospital?  @relation(fields: [hospitalId], references: [id], onDelete: SetNull)
+  ambulance Ambulance? @relation(fields: [ambulanceId], references: [id], onDelete: SetNull)
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  action      String
+  entityType  String
+  entityId    String?
+  description String?
+  createdAt   DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
