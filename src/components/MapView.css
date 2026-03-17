@@ -1,0 +1,64 @@
+.map-wrapper {
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+}
+
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.map-marker {
+  width: 36px;
+  height: 36px;
+  border-radius: 50% 50% 50% 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-45deg);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.map-marker svg {
+  transform: rotate(45deg);
+}
+
+.hospital-marker {
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+}
+
+.ambulance-marker {
+  background: linear-gradient(135deg, var(--danger), #dc2626);
+}
+
+.map-popup h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #1e293b;
+}
+
+.map-popup p {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.popup-detail {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+  font-size: 0.78rem;
+}
+
+.popup-label {
+  color: #64748b;
+}
+
+.popup-value {
+  font-weight: 600;
+  color: #1e293b;
+}
