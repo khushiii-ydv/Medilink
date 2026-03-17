@@ -1,0 +1,104 @@
+// MediLink Prisma Schema
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Hospital Profile ──────────────────────────────────────────────────────────
+model Hospital {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  phone         String?
+  address       String?
+  city          String?
+  state         String?
+  pincode       String?
+  lat           Float?
+  lng           Float?
+  accreditation String?
+  password      String   @default("hospital123") // for demo login
+
+  // Relations
+  resources     HospitalResource?
+  specialists   Specialist[]
+  equipment     Equipment[]
+  updateHistory ResourceUpdateHistory[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ─── Hospital Resources (1-to-1 with Hospital) ────────────────────────────────
+model HospitalResource {
+  id                    String   @id @default(uuid())
+  hospitalId            String   @unique
+  hospital              Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  // Beds
+  totalBeds             Int      @default(0)
+  availableBeds         Int      @default(0)
+  totalIcuBeds          Int      @default(0)
+  availableIcuBeds      Int      @default(0)
+
+  // Ventilators
+  totalVentilators      Int      @default(0)
+  availableVentilators  Int      @default(0)
+
+  // Oxygen (in liters)
+  oxygenCapacity        Int      @default(0)
+  oxygenAvailable       Int      @default(0)
+
+  // Blood Bank (units per type)
+  bloodAPos             Int      @default(0)
+  bloodANeg             Int      @default(0)
+  bloodBPos             Int      @default(0)
+  bloodBNeg             Int      @default(0)
+  bloodABPos            Int      @default(0)
+  bloodABNeg            Int      @default(0)
+  bloodOPos             Int      @default(0)
+  bloodONeg             Int      @default(0)
+
+  updatedAt             DateTime @updatedAt
+}
+
+// ─── Specialists / Doctors ────────────────────────────────────────────────────
+model Specialist {
+  id         String   @id @default(uuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  name       String
+  specialty  String
+  available  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ─── Equipment ────────────────────────────────────────────────────────────────
+model Equipment {
+  id         String   @id @default(uuid())
+  hospitalId String
+  hospital   Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  name       String
+  model      String?
+  quantity   Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ─── Resource Update History (audit trail) ────────────────────────────────────
+model ResourceUpdateHistory {
+  id           String   @id @default(uuid())
+  hospitalId   String
+  hospital     Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  resourceType String   // e.g. "availableBeds", "bloodAPos"
+  oldValue     String?
+  newValue     String
+  updatedAt    DateTime @default(now())
+}
