@@ -1,21 +1,22 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Building2, Ambulance, Users, Shield, Activity, Eye, EyeOff, Stethoscope } from 'lucide-react';
+import { Building2, Ambulance, Users, Shield, Activity, Eye, EyeOff, Stethoscope, Mail, Lock, User, Phone } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './Auth.css';
 
 const roles = [
-  { id: 'admin', label: 'Admin', icon: Shield, color: 'danger' },
-  { id: 'doctor', label: 'Doctor', icon: Stethoscope, color: 'accent' },
-  { id: 'hospital', label: 'Hospital', icon: Building2, color: 'primary' },
-  { id: 'ambulance', label: 'Ambulance', icon: Ambulance, color: 'warning' },
-  { id: 'patient', label: 'Patient', icon: Users, color: 'success' },
+  { id: 'hospital', label: 'Hospital', icon: Building2, color: 'primary', desc: 'Manage your facility' },
+  { id: 'admin', label: 'Admin', icon: Shield, color: 'danger', desc: 'Platform oversight' },
+  { id: 'doctor', label: 'Doctor', icon: Stethoscope, color: 'accent', desc: 'Resolve priority cases' },
+  { id: 'ambulance', label: 'Ambulance', icon: Ambulance, color: 'warning', desc: 'Emergency response' },
+  { id: 'patient', label: 'Patient', icon: Users, color: 'success', desc: 'Find medical help' },
 ];
 
 export default function Login() {
-  const [activeRole, setActiveRole] = useState('admin');
+  const [activeRole, setActiveRole] = useState('hospital');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', email: '', password: '' });
   const { login, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
@@ -28,13 +29,36 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await login(activeRole, form);
-    if (result.success) {
-      toast.success('Welcome back!');
-      // Navigate is handled by useEffect
-    } else {
-      toast.error(result.message);
+    setIsLoading(true);
+    try {
+      // Prepare credentials based on role
+      const credentials = {};
+      if (activeRole === 'hospital' || activeRole === 'ambulance') {
+        credentials.name = form.name;
+        credentials.password = form.password;
+      } else if (activeRole === 'admin' || activeRole === 'doctor') {
+        credentials.email = form.email;
+        credentials.password = form.password;
+      } else {
+        credentials.phone = form.phone;
+        credentials.password = form.password;
+      }
+
+      const result = await login(activeRole, credentials);
+      if (result.success) {
+        toast.success(`Welcome back, ${result.name || 'Member'}!`);
+      } else {
+        toast.error(result.message || 'Invalid credentials');
+      }
+    } catch (err) {
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const updateForm = (field, value) => {
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -54,106 +78,104 @@ export default function Login() {
               <span className="logo-text">Medi<span className="logo-highlight">Link</span></span>
             </Link>
             <h1>Welcome Back</h1>
-            <p>Sign in to your dashboard</p>
+            <p>Select your role to sign in</p>
           </div>
 
-          <div className="auth-role-tabs">
+          <div className="role-selector-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))' }}>
             {roles.map(role => (
               <button
                 key={role.id}
-                className={`auth-role-tab ${activeRole === role.id ? `active tab-${role.color}` : ''}`}
-                onClick={() => { setActiveRole(role.id); setForm({ name: '', phone: '', email: '', password: '' }); }}
-                id={`login-tab-${role.id}`}
+                type="button"
+                className={`role-select-box ${activeRole === role.id ? 'active' : ''}`}
+                onClick={() => setActiveRole(role.id)}
               >
-                <role.icon size={16} />
-                <span>{role.label}</span>
+                <div className={`role-icon-circle ${role.color}`}>
+                  <role.icon size={20} />
+                </div>
+                <div className="role-select-info">
+                  <span className="role-label">{role.label}</span>
+                </div>
               </button>
             ))}
           </div>
 
-          <form onSubmit={handleSubmit} className="auth-form">
-            {(activeRole === 'admin' || activeRole === 'doctor') && (
-              <>
-                <div className="form-group">
-                  <label className="form-label">{activeRole === 'admin' ? 'Admin Email' : 'Doctor Email'}</label>
-                  <input className="form-input" type="email" placeholder="e.g., user@medilink.com" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required id="login-email" />
+          <form onSubmit={handleSubmit} className="auth-form mt-4">
+            <div className="form-grid">
+              {(activeRole === 'hospital' || activeRole === 'ambulance') && (
+                <div className="form-group grid-full">
+                  <label className="form-label">
+                    <User size={14} /> {activeRole === 'hospital' ? 'Hospital Name' : 'Driver Name'}
+                  </label>
+                  <input 
+                    className="form-input" 
+                    placeholder={activeRole === 'hospital' ? "e.g., Apollo Multispeciality" : "Enter your name"} 
+                    value={form.name} 
+                    onChange={e => updateForm('name', e.target.value)} 
+                    required 
+                  />
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Password</label>
-                  <div className="input-password">
-                    <input className="form-input" type={showPassword ? 'text' : 'password'} placeholder="Enter password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required id="login-password" />
-                    <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
+              )}
 
-            {activeRole === 'hospital' && (
-              <>
-                <div className="form-group">
-                  <label className="form-label">Hospital Name</label>
-                  <input className="form-input" placeholder="e.g., Apollo Multispeciality Hospital" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required id="login-hospital-name" />
+              {(activeRole === 'admin' || activeRole === 'doctor') && (
+                <div className="form-group grid-full">
+                  <label className="form-label"><Mail size={14} /> Email Address</label>
+                  <input 
+                    className="form-input" 
+                    type="email"
+                    placeholder="name@medilink.com" 
+                    value={form.email} 
+                    onChange={e => updateForm('email', e.target.value)} 
+                    required 
+                  />
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Password</label>
-                  <div className="input-password">
-                    <input className="form-input" type={showPassword ? 'text' : 'password'} placeholder="Enter password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required id="login-hospital-password" />
-                    <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
+              )}
 
-            {activeRole === 'ambulance' && (
-              <>
-                <div className="form-group">
-                  <label className="form-label">Driver Name</label>
-                  <input className="form-input" placeholder="e.g., Raju Prasad" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required id="login-ambulance-name" />
+              {activeRole === 'patient' && (
+                <div className="form-group grid-full">
+                  <label className="form-label"><Phone size={14} /> Phone Number</label>
+                  <input 
+                    className="form-input" 
+                    placeholder="+91 99887 76655" 
+                    value={form.phone} 
+                    onChange={e => updateForm('phone', e.target.value)} 
+                    required 
+                  />
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Phone Number</label>
-                  <input className="form-input" placeholder="e.g., +91 98765-43210" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} required id="login-ambulance-phone" />
-                </div>
-              </>
-            )}
+              )}
 
-            {activeRole === 'patient' && (
-              <>
-                <div className="form-group">
-                  <label className="form-label">Phone Number</label>
-                  <input className="form-input" placeholder="e.g., +91 99887-76655" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} required id="login-patient-phone" />
+              <div className="form-group grid-full">
+                <label className="form-label"><Lock size={14} /> Password</label>
+                <div className="input-password">
+                  <input 
+                    className="form-input" 
+                    type={showPassword ? 'text' : 'password'} 
+                    placeholder="Enter your password" 
+                    value={form.password} 
+                    onChange={e => updateForm('password', e.target.value)} 
+                    required 
+                  />
+                  <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Password</label>
-                  <div className="input-password">
-                    <input className="form-input" type={showPassword ? 'text' : 'password'} placeholder="Enter password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required id="login-patient-password" />
-                    <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
+              </div>
+            </div>
 
-            <button type="submit" className="btn btn-primary auth-submit" id="login-submit">
-              Sign In
+            <button type="submit" className="btn btn-primary auth-submit btn-lg" disabled={isLoading}>
+              {isLoading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 
           <div className="auth-footer">
-            <p>Don't have an account? <Link to="/register" id="login-register-link">Create one</Link></p>
+            <p>Don't have an account? <Link to="/register">Create one</Link></p>
           </div>
 
-          <div className="auth-demo-info">
+          <div className="auth-demo-info mt-4">
             <p className="demo-title">Demo Credentials</p>
+            {activeRole === 'hospital' && <p>Name: <strong>Apollo Multispeciality Hospital</strong> / Pass: <strong>apollo123</strong></p>}
             {activeRole === 'admin' && <p>Email: <strong>admin@medilink.com</strong> / Pass: <strong>admin123</strong></p>}
             {activeRole === 'doctor' && <p>Email: <strong>doctor1@medilink.com</strong> / Pass: <strong>doc123</strong></p>}
-            {activeRole === 'hospital' && <p>Name: <strong>Apollo Multispeciality Hospital</strong> / Pass: <strong>apollo123</strong></p>}
-            {activeRole === 'ambulance' && <p>Name: <strong>Raju Prasad</strong> / Phone: <strong>+91 98765-43210</strong></p>}
+            {activeRole === 'ambulance' && <p>Name: <strong>Raju Prasad</strong> / Pass: <strong>raju123</strong></p>}
             {activeRole === 'patient' && <p>Phone: <strong>+91 99887-76655</strong> / Pass: <strong>amit123</strong></p>}
           </div>
         </div>

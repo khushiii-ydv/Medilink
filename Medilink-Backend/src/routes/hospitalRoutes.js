@@ -25,6 +25,7 @@ const router = Router();
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 router.post('/login', login);
+router.post('/hospital/login', login); // Alias for legacy/manual testing
 
 // ─── Hospitals listing / creation ─────────────────────────────────────────────
 router.get('/hospitals', listHospitals);

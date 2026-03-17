@@ -31,6 +31,7 @@ model Hospital {
   equipment      Equipment[]
   updateHistory  ResourceUpdateHistory[]
   patientRequests PatientRequest[]
+  ambulances     Ambulance[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -93,6 +94,34 @@ model Equipment {
   updatedAt  DateTime @updatedAt
 }
 
+// ─── Patient Profile ──────────────────────────────────────────────────────────
+model Patient {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String   @unique
+  password  String
+  requests  PatientRequest[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Ambulance Profile ────────────────────────────────────────────────────────
+model Ambulance {
+  id          String   @id @default(uuid())
+  driverName  String
+  vehicleNo   String   @unique
+  phone       String
+  password    String
+  type        String   @default("BLS") // BLS, ALS
+  status      String   @default("AVAILABLE") // AVAILABLE, BUSY, OFFLINE
+  
+  hospitalId  String
+  hospital    Hospital @relation(fields: [hospitalId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 // ─── System Users (Admin / System Doctors) ───────────────────────────────────
 model SystemUser {
   id        String   @id @default(uuid())
@@ -118,6 +147,9 @@ model PatientRequest {
   hospitalId   String
   hospital     Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
   
+  patientId    String?
+  patient      Patient?  @relation(fields: [patientId], references: [id])
+
   patientName  String
   patientPhone String?
   type         String     // e.g. "Admission", "Transfer"

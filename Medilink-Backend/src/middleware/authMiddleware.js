@@ -12,7 +12,7 @@ export const verifyToken = (req, res, next) => {
   let token = req.headers['authorization'];
 
   if (!token) {
-    return sendError(res, 401, 'No token provided. Access denied.');
+    return sendError(res, 'No token provided. Access denied.', 401);
   }
 
   // Remove "Bearer " if present
@@ -25,7 +25,7 @@ export const verifyToken = (req, res, next) => {
     req.user = decoded; // add user payload to request
     next();
   } catch (err) {
-    return sendError(res, 401, 'Invalid token.');
+    return sendError(res, 'Invalid token.', 401);
   }
 };
 
@@ -33,7 +33,7 @@ export const verifyToken = (req, res, next) => {
 export const verifyRole = (roles) => {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
-      return sendError(res, 403, 'Forbidden. Insufficient permissions.');
+      return sendError(res, 'Forbidden. Insufficient permissions.', 403);
     }
     next();
   };
@@ -51,7 +51,7 @@ export const verifyHospitalIdentity = (req, res, next) => {
   }
 
   if (req.user.role !== 'hospital' || req.user.id !== requestedId) {
-    return sendError(res, 403, 'Forbidden. You can only modify your own profile.');
+    return sendError(res, 'Forbidden. You can only modify your own profile.', 403);
   }
   
   next();

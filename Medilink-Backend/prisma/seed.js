@@ -239,6 +239,28 @@ const hospitals = [
       { name: 'ECG Machine', model: 'ECG-12L', quantity: 10 },
     ],
   },
+  {
+    id: 'h9',
+    name: 'Patil Hospital',
+    address: 'Sector 10, Mumbai',
+    city: 'Mumbai', state: 'Maharashtra', pincode: '400706',
+    phone: '+91 91234 56789', email: 'info@patilhospital.com',
+    lat: 19.033, lng: 73.0297,
+    accreditation: 'NABH', password: 'hello',
+    resources: {
+      totalBeds: 100, availableBeds: 45, totalIcuBeds: 10, availableIcuBeds: 2,
+      totalVentilators: 5, availableVentilators: 1,
+      oxygenCapacity: 5000, oxygenAvailable: 3500,
+      bloodAPos: 10, bloodANeg: 2, bloodBPos: 8, bloodBNeg: 1,
+      bloodABPos: 3, bloodABNeg: 1, bloodOPos: 12, bloodONeg: 2,
+    },
+    specialists: [
+      { name: 'Dr. Patil', specialty: 'General Medicine', available: true },
+    ],
+    equipment: [
+      { name: 'X-Ray', model: 'XR-100', quantity: 1 },
+    ],
+  },
 ];
 
 // ─── System Users (Admins and System Doctors) ────────────────────────────────
@@ -301,6 +323,8 @@ async function main() {
   await prisma.resourceUpdateHistory.deleteMany();
   await prisma.patientRequest.deleteMany();
   await prisma.systemUser.deleteMany();
+  await prisma.ambulance.deleteMany();
+  await prisma.patient.deleteMany();
   await prisma.equipment.deleteMany();
   await prisma.specialist.deleteMany();
   await prisma.hospitalResource.deleteMany();
@@ -335,11 +359,36 @@ async function main() {
   }
   console.log('✅ Seeded patient requests');
 
+  // Insert demo Patient
+  await prisma.patient.create({
+    data: {
+      name: 'Amit Patel',
+      phone: '+919988776655',
+      password: 'amit123'
+    }
+  });
+  console.log('✅ Seeded demo patient');
+
+  // Insert demo Ambulance
+  await prisma.ambulance.create({
+    data: {
+      driverName: 'Raju Prasad',
+      vehicleNo: 'DL-01-AMB-2024',
+      phone: '+919876543210',
+      password: 'raju123',
+      hospitalId: 'h1',
+      type: 'ALS'
+    }
+  });
+  console.log('✅ Seeded demo ambulance');
+
   console.log(`\n✅ Seeded ${hospitals.length} hospitals successfully!`);
   
   console.log('\nLogin credentials:');
   console.log('  ADMIN: admin@medilink.com / admin123');
   console.log('  DOCTOR: doctor1@medilink.com / doc123');
+  console.log('  PATIENT: +91 99887-76655 / amit123');
+  console.log('  AMBULANCE: Raju Prasad / raju123');
   hospitals.slice(0, 3).forEach(h => console.log(`  ${h.name}: "${h.password}"`));
 }
 

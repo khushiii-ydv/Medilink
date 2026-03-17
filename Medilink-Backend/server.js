@@ -8,6 +8,8 @@ import cors from 'cors';
 import hospitalRoutes from './src/routes/hospitalRoutes.js';
 import adminRoutes from './src/routes/adminRoutes.js';
 import doctorRoutes from './src/routes/doctorRoutes.js';
+import patientRoutes from './src/routes/patientRoutes.js';
+import ambulanceRoutes from './src/routes/ambulanceRoutes.js';
 import { errorHandler, notFound } from './src/middleware/errorHandler.js';
 
 const app = express();
@@ -39,16 +41,33 @@ app.get('/health', (req, res) => {
 app.use('/api', hospitalRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/doctor', doctorRoutes);
+app.use('/api/patient', patientRoutes);
+app.use('/api/ambulance', ambulanceRoutes);
 
 // ─── 404 & Error Handling ─────────────────────────────────────────────────────
 app.use(notFound);
 app.use(errorHandler);
 
 // ─── Start ────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`\n✅ MediLink Backend running on http://localhost:${PORT}`);
   console.log(`   Health check: http://localhost:${PORT}/health`);
   console.log(`   Environment: ${process.env.NODE_ENV || 'development'}\n`);
+});
+
+// ─── Global Error Handlers ──────────────────────────────────────────────────
+process.on('unhandledRejection', (err) => {
+  console.error('\n❌ UNHANDLED REJECTION! Shutting down...');
+  console.error(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('\n❌ UNCAUGHT EXCEPTION! Shutting down...');
+  console.error(err.name, err.message);
+  process.exit(1);
 });
 
 export default app;
