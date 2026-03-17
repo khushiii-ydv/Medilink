@@ -241,16 +241,77 @@ const hospitals = [
   },
 ];
 
+// ─── System Users (Admins and System Doctors) ────────────────────────────────
+const systemUsers = [
+  {
+    name: 'Main Admin',
+    email: 'admin@medilink.com',
+    password: 'admin123',
+    role: 'ADMIN',
+  },
+  {
+    name: 'Dr. Sarah Wilson',
+    email: 'doctor1@medilink.com',
+    password: 'doc123',
+    role: 'DOCTOR',
+  },
+  {
+    name: 'Dr. James Chen',
+    email: 'doctor2@medilink.com',
+    password: 'doc123',
+    role: 'DOCTOR',
+  },
+];
+
+// ─── Patient Requests for testing conflict resolution ────────────────────────
+const patientRequests = [
+  {
+    hospitalId: 'h1',
+    patientName: 'John Doe',
+    patientPhone: '+91 98765 43210',
+    type: 'Emergency Admission',
+    condition: 'Acute chest pain, potentially MI',
+    priority: 'HIGH',
+    status: 'PENDING',
+  },
+  {
+    hospitalId: 'h1',
+    patientName: 'Jane Smith',
+    patientPhone: '+91 98765 43211',
+    type: 'Emergency Admission',
+    condition: 'Severe abdominal trauma',
+    priority: 'HIGH',
+    status: 'PENDING',
+  },
+  {
+    hospitalId: 'h2',
+    patientName: 'Rahul Verma',
+    patientPhone: '+91 99887 76655',
+    type: 'Transfer',
+    condition: 'Post-op recovery requiring ICU',
+    priority: 'MEDIUM',
+    status: 'RESOLVED',
+  },
+];
+
 async function main() {
   console.log('🌱 Seeding MediLink database...\n');
 
   // Clear existing data (order matters due to foreign keys)
   await prisma.resourceUpdateHistory.deleteMany();
+  await prisma.patientRequest.deleteMany();
+  await prisma.systemUser.deleteMany();
   await prisma.equipment.deleteMany();
   await prisma.specialist.deleteMany();
   await prisma.hospitalResource.deleteMany();
   await prisma.hospital.deleteMany();
   console.log('✅ Cleared existing data');
+
+  // Insert system users
+  for (const user of systemUsers) {
+    await prisma.systemUser.create({ data: user });
+  }
+  console.log('✅ Seeded system users (Admins & Doctors)');
 
   // Insert hospitals
   for (const h of hospitals) {
@@ -268,9 +329,18 @@ async function main() {
     console.log(`  ✔ Seeded: ${h.name} (id: ${h.id})`);
   }
 
+  // Insert patient requests
+  for (const req of patientRequests) {
+    await prisma.patientRequest.create({ data: req });
+  }
+  console.log('✅ Seeded patient requests');
+
   console.log(`\n✅ Seeded ${hospitals.length} hospitals successfully!`);
+  
   console.log('\nLogin credentials:');
-  hospitals.forEach(h => console.log(`  ${h.name}: "${h.password}"`));
+  console.log('  ADMIN: admin@medilink.com / admin123');
+  console.log('  DOCTOR: doctor1@medilink.com / doc123');
+  hospitals.slice(0, 3).forEach(h => console.log(`  ${h.name}: "${h.password}"`));
 }
 
 main()

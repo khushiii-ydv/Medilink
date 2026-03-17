@@ -36,8 +36,9 @@ async function apiFetch(path, options = {}) {
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
-export async function loginHospitalReq(credentials) {
-  return apiFetch('/hospital/login', {
+export async function loginReq(credentials) {
+  // credentials can be { name, password } or { email, password }
+  return apiFetch('/login', {
     method: 'POST',
     body: JSON.stringify(credentials),
   });

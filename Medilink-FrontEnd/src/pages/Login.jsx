@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Building2, Ambulance, Users, Shield, Activity, Eye, EyeOff } from 'lucide-react';
+import { Building2, Ambulance, Users, Shield, Activity, Eye, EyeOff, Stethoscope } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './Auth.css';
 
 const roles = [
   { id: 'admin', label: 'Admin', icon: Shield, color: 'danger' },
+  { id: 'doctor', label: 'Doctor', icon: Stethoscope, color: 'accent' },
   { id: 'hospital', label: 'Hospital', icon: Building2, color: 'primary' },
   { id: 'ambulance', label: 'Ambulance', icon: Ambulance, color: 'warning' },
   { id: 'patient', label: 'Patient', icon: Users, color: 'success' },
@@ -25,12 +26,12 @@ export default function Login() {
     }
   }, [isAuthenticated, user, navigate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = login(activeRole, form);
+    const result = await login(activeRole, form);
     if (result.success) {
       toast.success('Welcome back!');
-      navigate(`/${activeRole}`);
+      // Navigate is handled by useEffect
     } else {
       toast.error(result.message);
     }
@@ -71,16 +72,16 @@ export default function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
-            {activeRole === 'admin' && (
+            {(activeRole === 'admin' || activeRole === 'doctor') && (
               <>
                 <div className="form-group">
-                  <label className="form-label">Email Address</label>
-                  <input className="form-input" type="email" placeholder="e.g., admin@medilink.com" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required id="login-admin-email" />
+                  <label className="form-label">{activeRole === 'admin' ? 'Admin Email' : 'Doctor Email'}</label>
+                  <input className="form-input" type="email" placeholder="e.g., user@medilink.com" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required id="login-email" />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Password</label>
                   <div className="input-password">
-                    <input className="form-input" type={showPassword ? 'text' : 'password'} placeholder="Enter password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required id="login-admin-password" />
+                    <input className="form-input" type={showPassword ? 'text' : 'password'} placeholder="Enter password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required id="login-password" />
                     <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
@@ -149,10 +150,11 @@ export default function Login() {
 
           <div className="auth-demo-info">
             <p className="demo-title">Demo Credentials</p>
-            {activeRole === 'admin' && <p>Email: <strong>admin@medilink.com</strong> / Password: <strong>admin123</strong></p>}
-            {activeRole === 'hospital' && <p>Name: <strong>Apollo Multispeciality Hospital</strong> / Password: <strong>apollo123</strong></p>}
+            {activeRole === 'admin' && <p>Email: <strong>admin@medilink.com</strong> / Pass: <strong>admin123</strong></p>}
+            {activeRole === 'doctor' && <p>Email: <strong>doctor1@medilink.com</strong> / Pass: <strong>doc123</strong></p>}
+            {activeRole === 'hospital' && <p>Name: <strong>Apollo Multispeciality Hospital</strong> / Pass: <strong>apollo123</strong></p>}
             {activeRole === 'ambulance' && <p>Name: <strong>Raju Prasad</strong> / Phone: <strong>+91 98765-43210</strong></p>}
-            {activeRole === 'patient' && <p>Phone: <strong>+91 99887-76655</strong> / Password: <strong>amit123</strong></p>}
+            {activeRole === 'patient' && <p>Phone: <strong>+91 99887-76655</strong> / Pass: <strong>amit123</strong></p>}
           </div>
         </div>
       </div>

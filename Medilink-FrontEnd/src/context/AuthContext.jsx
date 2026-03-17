@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { initialHospitals, initialAmbulances, initialPatients, initialAdmins } from '../data/mockData';
 
-import { loginHospitalReq, registerHospitalReq } from '../api/hospitalApi';
+import { loginReq, registerHospitalReq } from '../api/hospitalApi';
 
 const AuthContext = createContext(null);
 
@@ -21,51 +21,24 @@ export function AuthProvider({ children }) {
   }, [user]);
 
   const login = async (role, credentials) => {
-    if (role === 'hospital') {
-      try {
-        const data = await loginHospitalReq({ name: credentials.name, password: credentials.password });
-        // Include token in the user object
-        setUser({ role: 'hospital', hospitalId: data.hospitalId, name: data.name, token: data.token });
-        return { success: true };
-      } catch (err) {
-        return { success: false, message: err.message || 'Invalid hospital name or password' };
-      }
-    }
+    try {
+      // All roles (hospital, admin, doctor) now use the same API endpoint
+      const data = await loginReq(credentials);
+      
+      const userObj = {
+        role: data.role,
+        name: data.name,
+        token: data.token,
+        id: data.id,
+        ...(data.hospitalId && { hospitalId: data.hospitalId }),
+      };
 
-    if (role === 'ambulance') {
-      const ambulance = initialAmbulances.find(
-        a => a && a.phone === credentials.phone && a.driverName && a.driverName.toLowerCase() === credentials.name.toLowerCase()
-      );
-      if (ambulance) {
-        setUser({ role: 'ambulance', ambulanceId: ambulance.id, name: ambulance.driverName, hospitalId: ambulance.hospitalId });
-        return { success: true };
-      }
-      return { success: false, message: 'Invalid driver name or phone number' };
+      setUser(userObj);
+      return { success: true };
+    } catch (err) {
+      console.error('Login error:', err);
+      return { success: false, message: err.message || 'Invalid credentials' };
     }
-
-    if (role === 'patient') {
-      const patient = initialPatients.find(
-        p => p && p.phone === credentials.phone && p.password === credentials.password
-      );
-      if (patient) {
-        setUser({ role: 'patient', patientId: patient.id, name: patient.name, phone: patient.phone });
-        return { success: true };
-      }
-      return { success: false, message: 'Invalid phone or password' };
-    }
-
-    if (role === 'admin') {
-      const admin = initialAdmins.find(
-        a => a && a.email.toLowerCase() === credentials.email.toLowerCase() && a.password === credentials.password
-      );
-      if (admin) {
-        setUser({ role: 'admin', adminId: admin.id, name: admin.name, email: admin.email });
-        return { success: true };
-      }
-      return { success: false, message: 'Invalid admin email or password' };
-    }
-
-    return { success: false, message: 'Invalid role' };
   };
 
   const register = async (role, data) => {

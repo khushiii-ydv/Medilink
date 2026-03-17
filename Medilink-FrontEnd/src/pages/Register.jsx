@@ -1,22 +1,32 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Building2, Ambulance, Users, Activity, Eye, EyeOff } from 'lucide-react';
-import { initialHospitals } from '../data/mockData';
+import { Building2, Ambulance, Users, Activity, Eye, EyeOff, Mail, Phone, Lock, User, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './Auth.css';
 
 const roles = [
-  { id: 'hospital', label: 'Hospital', icon: Building2, color: 'primary' },
-  { id: 'ambulance', label: 'Ambulance', icon: Ambulance, color: 'warning' },
-  { id: 'patient', label: 'Patient', icon: Users, color: 'success' },
+  { id: 'patient', label: 'Patient', icon: Users, color: 'success', desc: 'Book hospital visits & ambulances' },
+  { id: 'hospital', label: 'Hospital', icon: Building2, color: 'primary', desc: 'Register your medical facility' },
+  { id: 'ambulance', label: 'Ambulance', icon: Ambulance, color: 'warning', desc: 'Join the emergency network' },
 ];
 
 export default function Register() {
   const [searchParams] = useSearchParams();
   const [activeRole, setActiveRole] = useState(searchParams.get('role') || 'patient');
   const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({ name: '', phone: '', password: '', vehicleNo: '', hospitalId: '', type: 'BLS' });
+  const [isLoading, setIsLoading] = useState(false);
+  const [form, setForm] = useState({ 
+    name: '', 
+    email: '',
+    phone: '', 
+    password: '', 
+    address: '',
+    vehicleNo: '', 
+    hospitalId: '', 
+    type: 'BLS' 
+  });
+  
   const { register, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
@@ -26,15 +36,26 @@ export default function Register() {
     }
   }, [isAuthenticated, user, navigate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = register(activeRole, form);
-    if (result.success) {
-      toast.success('Registration successful! Welcome to MediLink.');
-      navigate(`/${activeRole}`);
-    } else {
-      toast.error(result.message || 'Registration failed');
+    setIsLoading(true);
+    try {
+      const result = await register(activeRole, form);
+      if (result.success) {
+        toast.success('Registration successful! Welcome to MediLink.');
+        // Navigation is handled by useEffect
+      } else {
+        toast.error(result.message || 'Registration failed');
+      }
+    } catch (err) {
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const updateForm = (field, value) => {
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -54,106 +75,142 @@ export default function Register() {
               <span className="logo-text">Medi<span className="logo-highlight">Link</span></span>
             </Link>
             <h1>Create Account</h1>
-            <p>Join the MediLink healthcare network</p>
+            <p>Join the healthcare revolution</p>
           </div>
 
-          <div className="auth-role-tabs">
+          <div className="role-selector-grid">
             {roles.map(role => (
               <button
                 key={role.id}
-                className={`auth-role-tab ${activeRole === role.id ? `active tab-${role.color}` : ''}`}
-                onClick={() => { setActiveRole(role.id); setForm({ name: '', phone: '', password: '', vehicleNo: '', hospitalId: '', type: 'BLS' }); }}
-                id={`register-tab-${role.id}`}
+                type="button"
+                className={`role-select-box ${activeRole === role.id ? 'active' : ''}`}
+                onClick={() => setActiveRole(role.id)}
               >
-                <role.icon size={16} />
-                <span>{role.label}</span>
+                <div className={`role-icon-circle ${role.color}`}>
+                  <role.icon size={20} />
+                </div>
+                <div className="role-select-info">
+                  <span className="role-label">{role.label}</span>
+                  <span className="role-desc">{role.desc}</span>
+                </div>
               </button>
             ))}
           </div>
 
-          <form onSubmit={handleSubmit} className="auth-form">
-            {activeRole === 'patient' && (
-              <>
-                <div className="form-group">
-                  <label className="form-label">Full Name</label>
-                  <input className="form-input" placeholder="Enter your name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required id="register-patient-name" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Phone Number</label>
-                  <input className="form-input" placeholder="e.g., +91 99887-76655" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} required id="register-patient-phone" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Password</label>
-                  <div className="input-password">
-                    <input className="form-input" type={showPassword ? 'text' : 'password'} placeholder="Create a password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required id="register-patient-password" />
-                    <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
+          <form onSubmit={handleSubmit} className="auth-form mt-4">
+            <div className="form-grid">
+              <div className="form-group grid-full">
+                <label className="form-label">
+                  <User size={14} /> {activeRole === 'hospital' ? 'Hospital Name' : 'Full Name'}
+                </label>
+                <input 
+                  className="form-input" 
+                  placeholder={activeRole === 'hospital' ? "e.g., City General Hospital" : "Enter your full name"} 
+                  value={form.name} 
+                  onChange={e => updateForm('name', e.target.value)} 
+                  required 
+                />
+              </div>
+
+              {activeRole === 'hospital' && (
+                <>
+                  <div className="form-group">
+                    <label className="form-label"><Mail size={14} /> Email Address</label>
+                    <input 
+                      className="form-input" 
+                      type="email"
+                      placeholder="hospital@example.com" 
+                      value={form.email} 
+                      onChange={e => updateForm('email', e.target.value)} 
+                      required 
+                    />
                   </div>
-                </div>
-              </>
-            )}
-
-            {activeRole === 'ambulance' && (
-              <>
-                <div className="form-group">
-                  <label className="form-label">Driver Name</label>
-                  <input className="form-input" placeholder="Enter driver name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required id="register-ambulance-name" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Phone Number</label>
-                  <input className="form-input" placeholder="e.g., +91 98765-43210" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} required id="register-ambulance-phone" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Vehicle Number</label>
-                  <input className="form-input" placeholder="e.g., DL-01-AB-1234" value={form.vehicleNo} onChange={e => setForm({...form, vehicleNo: e.target.value})} required id="register-ambulance-vehicle" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Associated Hospital</label>
-                  <select className="form-select" value={form.hospitalId} onChange={e => setForm({...form, hospitalId: e.target.value})} required id="register-ambulance-hospital">
-                    <option value="">Select hospital</option>
-                    {initialHospitals.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Ambulance Type</label>
-                  <select className="form-select" value={form.type} onChange={e => setForm({...form, type: e.target.value})} id="register-ambulance-type">
-                    <option value="BLS">BLS (Basic Life Support)</option>
-                    <option value="ALS">ALS (Advanced Life Support)</option>
-                  </select>
-                </div>
-              </>
-            )}
-
-            {activeRole === 'hospital' && (
-              <>
-                <div className="form-group">
-                  <label className="form-label">Hospital Name</label>
-                  <select className="form-select" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required id="register-hospital-name">
-                    <option value="">Select your hospital</option>
-                    {initialHospitals.map(h => <option key={h.id} value={h.name}>{h.name}</option>)}
-                  </select>
-                  <span className="form-hint">Hospitals are pre-registered. Select and enter password to login.</span>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Password</label>
-                  <div className="input-password">
-                    <input className="form-input" type={showPassword ? 'text' : 'password'} placeholder="Enter password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} required id="register-hospital-password" />
-                    <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
+                  <div className="form-group">
+                    <label className="form-label"><Phone size={14} /> Phone Number</label>
+                    <input 
+                      className="form-input" 
+                      placeholder="+91 88888 88888" 
+                      value={form.phone} 
+                      onChange={e => updateForm('phone', e.target.value)} 
+                      required 
+                    />
                   </div>
-                </div>
-              </>
-            )}
+                  <div className="form-group grid-full">
+                    <label className="form-label"><MapPin size={14} /> Full Address</label>
+                    <input 
+                      className="form-input" 
+                      placeholder="Enter hospital location" 
+                      value={form.address} 
+                      onChange={e => updateForm('address', e.target.value)} 
+                      required 
+                    />
+                  </div>
+                </>
+              )}
 
-            <button type="submit" className="btn btn-primary auth-submit" id="register-submit">
-              {activeRole === 'hospital' ? 'Sign In' : 'Create Account'}
+              {activeRole === 'patient' && (
+                <div className="form-group grid-full">
+                  <label className="form-label"><Phone size={14} /> Phone Number</label>
+                  <input 
+                    className="form-input" 
+                    placeholder="e.g., +91 99887 76655" 
+                    value={form.phone} 
+                    onChange={e => updateForm('phone', e.target.value)} 
+                    required 
+                  />
+                </div>
+              )}
+
+              {activeRole === 'ambulance' && (
+                <>
+                  <div className="form-group">
+                    <label className="form-label"><Phone size={14} /> Driver Phone</label>
+                    <input 
+                      className="form-input" 
+                      placeholder="+91 98765 43210" 
+                      value={form.phone} 
+                      onChange={e => updateForm('phone', e.target.value)} 
+                      required 
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Vehicle No.</label>
+                    <input 
+                      className="form-input" 
+                      placeholder="DL-01-AB-1234" 
+                      value={form.vehicleNo} 
+                      onChange={e => updateForm('vehicleNo', e.target.value)} 
+                      required 
+                    />
+                  </div>
+                </>
+              )}
+
+              <div className="form-group grid-full">
+                <label className="form-label"><Lock size={14} /> Password</label>
+                <div className="input-password">
+                  <input 
+                    className="form-input" 
+                    type={showPassword ? 'text' : 'password'} 
+                    placeholder="Create a strong password" 
+                    value={form.password} 
+                    onChange={e => updateForm('password', e.target.value)} 
+                    required 
+                  />
+                  <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" className="btn btn-primary auth-submit btn-lg" disabled={isLoading}>
+              {isLoading ? 'Creating Account...' : 'Sign Up Now'}
             </button>
           </form>
 
           <div className="auth-footer">
-            <p>Already have an account? <Link to="/login" id="register-login-link">Sign in</Link></p>
+            <p>Already have an account? <Link to="/login">Sign in</Link></p>
           </div>
         </div>
       </div>

@@ -26,10 +26,11 @@ model Hospital {
   password      String   @default("hospital123") // for demo login
 
   // Relations
-  resources     HospitalResource?
-  specialists   Specialist[]
-  equipment     Equipment[]
-  updateHistory ResourceUpdateHistory[]
+  resources      HospitalResource?
+  specialists    Specialist[]
+  equipment      Equipment[]
+  updateHistory  ResourceUpdateHistory[]
+  patientRequests PatientRequest[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -90,6 +91,61 @@ model Equipment {
   quantity   Int      @default(0)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+// ─── System Users (Admin / System Doctors) ───────────────────────────────────
+model SystemUser {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      SystemRole @default(DOCTOR)
+  
+  assignedRequests PatientRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SystemRole {
+  ADMIN
+  DOCTOR
+}
+
+// ─── Patient Requests & Conflict Resolution ──────────────────────────────────
+model PatientRequest {
+  id           String   @id @default(uuid())
+  hospitalId   String
+  hospital     Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  
+  patientName  String
+  patientPhone String?
+  type         String     // e.g. "Admission", "Transfer"
+  condition    String?
+  
+  priority     RequestPriority @default(MEDIUM)
+  status       RequestStatus   @default(PENDING)
+  
+  // Assigned system doctor (for conflict resolution)
+  assignedDoctorId String?
+  assignedDoctor   SystemUser? @relation(fields: [assignedDoctorId], references: [id])
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum RequestPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum RequestStatus {
+  PENDING
+  ASSIGNED
+  RESOLVED
+  COMPLETED
 }
 
 // ─── Resource Update History (audit trail) ────────────────────────────────────

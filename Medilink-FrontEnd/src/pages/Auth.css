@@ -247,12 +247,119 @@
   color: var(--text-primary);
 }
 
-@media (max-width: 480px) {
-  .auth-card {
-    padding: 28px 20px;
+/* Role Selector Grid */
+.role-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.role-select-box {
+  background: var(--bg-tertiary);
+  border: 2px solid transparent;
+  border-radius: var(--border-radius-lg);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 12px;
+}
+
+.role-select-box:hover {
+  background: var(--bg-secondary);
+  transform: translateY(-2px);
+}
+
+.role-select-box.active {
+  background: var(--bg-primary);
+  border-color: var(--primary-500);
+  box-shadow: 0 0 20px rgba(0, 178, 205, 0.2);
+}
+
+.role-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.role-select-box.active .role-icon-circle.success { background: var(--accent-500); color: white; }
+.role-select-box.active .role-icon-circle.primary { background: var(--primary-500); color: white; }
+.role-select-box.active .role-icon-circle.warning { background: #f59e0b; color: white; }
+
+.role-select-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.role-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.role-desc {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  line-height: 1.2;
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.grid-full {
+  grid-column: 1 / -1;
+}
+
+.form-group .form-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.mt-4 { margin-top: 1.5rem; }
+
+.btn-lg {
+  padding: 16px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 640px) {
+  .role-selector-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .role-select-box {
+    flex-direction: row;
+    padding: 12px;
+    text-align: left;
+    align-items: center;
   }
 
-  .auth-role-tab span {
-    display: none;
+  .form-grid {
+    grid-template-columns: 1fr;
   }
+}
+
+.auth-card {
+  max-width: 520px;
+  margin: 0 auto;
 }

@@ -40,10 +40,15 @@ import EmergencyCases from './pages/admin/EmergencyCases';
 import AdminHospitals from './pages/admin/AdminHospitals';
 import AdminAmbulances from './pages/admin/AdminAmbulances';
 import ResourceMonitor from './pages/admin/ResourceMonitor';
-import AdminAnalytics from './pages/admin/AdminAnalytics';
+
+// Doctor
+import DoctorLayout from './pages/doctor/DoctorLayout';
+import DoctorDashboard from './pages/doctor/DoctorDashboard';
 
 // Plans
 import Plans from './pages/Plans';
+
+// Catch-all
 
 function PublicLayout({ children }) {
   return (
@@ -120,7 +125,14 @@ function App() {
           <Route path="hospitals" element={<AdminHospitals />} />
           <Route path="ambulances" element={<AdminAmbulances />} />
           <Route path="resources" element={<ResourceMonitor />} />
-          <Route path="analytics" element={<AdminAnalytics />} />
+        </Route>
+
+        {/* Doctor Dashboard */}
+        <Route path="/doctor" element={
+          <ProtectedRoute allowedRole="doctor"><DoctorLayout /></ProtectedRoute>
+        }>
+          <Route index element={<DoctorDashboard />} />
+          <Route path="requests" element={<DoctorDashboard />} />
         </Route>
 
         {/* Catch-all */}

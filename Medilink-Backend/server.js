@@ -6,6 +6,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import hospitalRoutes from './src/routes/hospitalRoutes.js';
+import adminRoutes from './src/routes/adminRoutes.js';
+import doctorRoutes from './src/routes/doctorRoutes.js';
 import { errorHandler, notFound } from './src/middleware/errorHandler.js';
 
 const app = express();
@@ -35,6 +37,8 @@ app.get('/health', (req, res) => {
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
 app.use('/api', hospitalRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/doctor', doctorRoutes);
 
 // ─── 404 & Error Handling ─────────────────────────────────────────────────────
 app.use(notFound);

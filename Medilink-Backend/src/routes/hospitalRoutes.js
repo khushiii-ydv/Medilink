@@ -17,14 +17,14 @@ import {
   updateSpecialist,
   deleteSpecialist,
 } from '../controllers/hospitalController.js';
-import { loginHospital } from '../controllers/authController.js';
+import { login } from '../controllers/authController.js';
 import { validateRequired } from '../middleware/validate.js';
 import { verifyToken, verifyRole, verifyHospitalIdentity } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
-router.post('/hospital/login', loginHospital);
+router.post('/login', login);
 
 // ─── Hospitals listing / creation ─────────────────────────────────────────────
 router.get('/hospitals', listHospitals);

@@ -1,18 +1,15 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
-import { LayoutDashboard, AlertCircle, Building2, Ambulance, Activity, BarChart3, X } from 'lucide-react';
+import { LayoutDashboard, Stethoscope, ClipboardList, Settings, X } from 'lucide-react';
 import '../Dashboard.css';
 
-const adminLinks = [
-  { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/admin/emergency', label: 'Emergency Cases', icon: AlertCircle },
-  { path: '/admin/hospitals', label: 'Hospitals', icon: Building2 },
-  { path: '/admin/ambulances', label: 'Ambulances', icon: Ambulance },
-  { path: '/admin/resources', label: 'Resource Monitor', icon: Activity },
+const doctorLinks = [
+  { path: '/doctor', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/doctor/requests', label: 'Assigned Requests', icon: ClipboardList },
 ];
 
-export default function AdminLayout() {
+export default function DoctorLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
@@ -20,17 +17,21 @@ export default function AdminLayout() {
     <div className="dashboard-layout">
       <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} sidebarOpen={sidebarOpen} />
       
-      {/* Custom Admin Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <h2>Admin Panel</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ padding: 8, background: 'var(--primary-500)', borderRadius: 8, color: 'white' }}>
+              <Stethoscope size={20} />
+            </div>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Doc Panel</h2>
+          </div>
           <button className="btn-icon btn-ghost mobile-close-btn" onClick={() => setSidebarOpen(false)}>
             <X size={20} />
           </button>
         </div>
         <div className="sidebar-nav">
-          {adminLinks.map(link => {
-            const isActive = location.pathname === link.path || (link.path !== '/admin' && location.pathname.startsWith(link.path));
+          {doctorLinks.map(link => {
+            const isActive = location.pathname === link.path;
             return (
               <Link 
                 key={link.path} 
